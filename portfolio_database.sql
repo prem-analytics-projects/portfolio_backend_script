@@ -420,6 +420,14 @@ CREATE TABLE portfolio.blog_category_mapping (
     PRIMARY KEY (blog_id, blog_category_id)
 );
 
+CREATE TABLE portfolio.blog_tag_mapping (
+    blog_id BIGINT NOT NULL
+        REFERENCES portfolio.blogs(blog_id) ON DELETE CASCADE,
+    blog_tag_id BIGINT NOT NULL
+        REFERENCES portfolio.blog_tags(blog_tag_id) ON DELETE CASCADE,
+    PRIMARY KEY (blog_id, blog_tag_id)
+);
+
 -- 11. CONTACT INFORMATION AND INBOUND MESSAGES -----------------------------
 CREATE TABLE portfolio.contact_details (
     contact_id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
