@@ -185,10 +185,14 @@ CREATE TABLE portfolio.projects (
     profile_id          BIGINT NOT NULL REFERENCES portfolio.profile(profile_id) ON DELETE CASCADE,
     title               VARCHAR(255) NOT NULL,
     description         TEXT,
+   problem_statement   TEXT,
+   solution_summary    TEXT,
+   impact_summary      TEXT,
     start_date          DATE,
     end_date            DATE,
     project_url         TEXT,
     github_url          TEXT,
+    
     thumbnail_media_id  BIGINT REFERENCES portfolio.media_assets(media_id) ON DELETE SET NULL,
     is_featured         BOOLEAN NOT NULL DEFAULT FALSE,
     is_active           BOOLEAN NOT NULL DEFAULT TRUE,
@@ -201,6 +205,31 @@ CREATE TABLE portfolio.projects (
 );
 CREATE INDEX idx_projects_profile_active_order ON portfolio.projects(profile_id, is_active, display_order);
 CREATE INDEX idx_projects_featured ON portfolio.projects(is_featured) WHERE is_featured = TRUE;
+
+CREATE TABLE portfolio.project_impact_metrics (
+    impact_metric_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    project_id       BIGINT NOT NULL
+                     REFERENCES portfolio.projects(project_id)
+                     ON DELETE CASCADE,
+
+    metric_label     VARCHAR(150) NOT NULL,
+    metric_value     VARCHAR(100) NOT NULL,
+    metric_unit      VARCHAR(50),
+    description      TEXT,
+
+    display_order    INTEGER NOT NULL DEFAULT 0,
+    is_active        BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    created_by       BIGINT REFERENCES auth.users(user_id) ON DELETE SET NULL,
+    updated_by       BIGINT REFERENCES auth.users(user_id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_project_impact_project_order
+    ON portfolio.project_impact_metrics
+    (project_id, is_active, display_order);
 
 CREATE TABLE portfolio.project_media (
     project_media_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -459,7 +488,7 @@ DECLARE
     portfolio_tables TEXT[] := ARRAY[
         'media_assets', 'profile', 'about_content', 'projects', 'skills',
         'education', 'companies', 'experiences', 'languages', 'social_links',
-        'blogs', 'contact_details', 'website_settings'
+        'blogs', 'contact_details', 'website_settings','project_impact_metrics'
     ];
 BEGIN
     FOREACH tbl IN ARRAY auth_tables LOOP
